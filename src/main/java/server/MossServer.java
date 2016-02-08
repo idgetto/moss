@@ -22,19 +22,20 @@ public class MossServer {
     }
 
     public void start(int port) {
-        while (!done.get()) {
-            try (
-                    ServerSocket serverSocket = new ServerSocket(port);
-                    Socket clientSocket = serverSocket.accept();
-                    PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-                    BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            ) {
-                String msg = readAll(in);
-                System.out.println(msg);
-                sendOk(out);
-            } catch (IOException e) {
-                e.printStackTrace();
+        try (ServerSocket serverSocket = new ServerSocket(port);) {
+            while (!done.get()) {
+                try (
+                        Socket clientSocket = serverSocket.accept();
+                        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                ) {
+                    String msg = readAll(in);
+                    System.out.println(msg);
+                    sendOk(out);
+                }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
