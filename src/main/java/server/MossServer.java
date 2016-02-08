@@ -1,6 +1,9 @@
 package server;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.CharBuffer;
@@ -11,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class MossServer {
     private static final int HTTP_MESSAGE_SIZE = 10000;
+    private static final String OK_MSG = "HTTP/1.1 200 OK\r\n\r\n<h1>Hello, World!</h1>";
     private AtomicBoolean done;
 
     public MossServer() {
@@ -50,7 +54,7 @@ public class MossServer {
     }
 
     private void sendOk(PrintWriter out) {
-        out.println("HTTP/1.1 200 OK\r\n\r\n<h1>Hello, World!</h1>");
+        out.println(OK_MSG);
     }
 
 }
