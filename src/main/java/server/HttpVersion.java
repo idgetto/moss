@@ -1,8 +1,11 @@
 package server;
 
+import annotations.Rfc;
+
 /**
  * Created by isaac on 2/8/16.
  */
+@Rfc("https://tools.ietf.org/html/rfc7230#section-2.6")
 public class HttpVersion {
     public static final HttpVersion HTTP_V_1_1 = new HttpVersion("HTTP/1.1");
     private int majorVersion;
