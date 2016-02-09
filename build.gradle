@@ -2,8 +2,11 @@ group 'com.isaacgetto'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
+apply plugin: 'application'
 
-sourceCompatibility = 1.5
+mainClassName = "runner.MossRunner"
+
+sourceCompatibility = 1.7
 
 repositories {
     mavenCentral()

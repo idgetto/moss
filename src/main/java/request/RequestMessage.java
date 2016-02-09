@@ -1,13 +1,11 @@
 package request;
 
 import annotations.Rfc;
-import com.sun.corba.se.impl.protocol.giopmsgheaders.Message;
 import parser.RequestMessageParser;
 import server.HttpVersion;
 import server.MessageHeaders;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Created by isaac on 2/8/16.
