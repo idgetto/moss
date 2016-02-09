@@ -32,7 +32,7 @@ public class RequestMessage {
         this.requestBody = requestBody;
     }
 
-    public static RequestMessage fromString(String msg) throws RequestMessageParser.RequestMessageParsingException {
+    public static RequestMessage fromString(String msg) throws RequestMessageParsingException {
         RequestMessageParser parser = new RequestMessageParser();
         return parser.parseRequestMessage(msg);
     }

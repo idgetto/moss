@@ -1,6 +1,7 @@
 package parser;
 
 import request.RequestMessage;
+import request.RequestMessageParsingException;
 import request.RequestMethod;
 import server.HttpVersion;
 import server.MessageHeaders;
@@ -98,20 +99,4 @@ public class RequestMessageParser {
         src.delete(0, expected.length());
     }
 
-    public class RequestMessageParsingException extends Exception {
-
-        public RequestMessageParsingException() {}
-
-        public RequestMessageParsingException(String message) {
-            super(message);
-        }
-
-        public RequestMessageParsingException(Throwable throwable) {
-            super(throwable);
-        }
-
-        public RequestMessageParsingException(String message, Throwable throwable) {
-            super(message, throwable);
-        }
-    }
 }

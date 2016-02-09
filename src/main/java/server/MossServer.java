@@ -1,5 +1,9 @@
 package server;
 
+import parser.RequestMessageParser;
+import request.RequestMessage;
+import request.RequestMessageParsingException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,7 +35,13 @@ public class MossServer {
                 ) {
                     String msg = readAll(in);
                     System.out.println(msg);
+
+                    RequestMessage requestMessage = RequestMessage.fromString(msg);
+                    System.out.println(requestMessage.getRequestMethod());
+
                     sendOk(out);
+                } catch (RequestMessageParsingException e) {
+                    e.printStackTrace();
                 }
             }
         } catch (IOException e) {

@@ -16,6 +16,7 @@ public class RequestMessageTest {
     private static final String REQ_HEADERS = "GET / HTTP/1.1\r\nHost: localhost:3000\r\nConnection: keep-alive\r\n\r\n";
     private static final String REQ_COOKIES = "GET / HTTP/1.1\r\nHost: localhost:3000\r\nSet-Cookie: uid=5\r\n\r\n";
     private static final String REQ_MESSAGE_BODY = "POST / HTTP/1.1\r\nHost: localhost:3000\r\nContent-Length: 16\r\n\r\nHere's a message";
+    private static final String REQ_BAD_METHOD = "FIND / HTTP/1.1\r\nHost: localhost:3000\r\nContent-Length: 16\r\n\r\nHere's a message";
 
     @Test
     public void testFromStartLineString() throws Exception {
@@ -59,5 +60,15 @@ public class RequestMessageTest {
         // assertEquals(new URI("localhost:3000"), reqMessageBody.getRequestUri());
         assertEquals(new HttpVersion("HTTP/1.1"), reqMessageBody.getHttpVersion());
         assertEquals("Here's a message", reqMessageBody.getRequestBody());
+    }
+
+    @Test(expected = RequestMessageParsingException.class)
+    public void testBadRequestMethod() throws Exception {
+        RequestMessage reqMessageBody = RequestMessage.fromString(REQ_BAD_METHOD);
+    }
+
+    @Test(expected = RequestMessageParsingException.class)
+    public void testBlankMessage() throws Exception {
+        RequestMessage reqMessageBody = RequestMessage.fromString("");
     }
 }

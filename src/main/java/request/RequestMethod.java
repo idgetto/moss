@@ -1,6 +1,7 @@
 package request;
 
 import annotations.Rfc;
+import parser.RequestMessageParser;
 
 /**
  * Created by isaac on 2/8/16.
@@ -25,7 +26,7 @@ public enum RequestMethod {
     private static final String OPTIONS_STR = "OPTIONS";
     private static final String TRACE_STR = "TRACE";
 
-    public static RequestMethod fromString(String msg) {
+    public static RequestMethod fromString(String msg) throws RequestMessageParsingException {
         switch (msg) {
             case GET_STR:
                 return GET;
@@ -45,7 +46,7 @@ public enum RequestMethod {
                 return TRACE;
             default:
                 String message = String.format("Could not find a request method for \"%s\".", msg);
-                throw new IllegalArgumentException(message);
+                throw new RequestMessageParsingException(message);
         }
     }
 
