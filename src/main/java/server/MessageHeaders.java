@@ -30,7 +30,7 @@ public class MessageHeaders {
     }
 
     public void addHeader(String name, String value) {
-        if (SET_COOKIE_NAME == name) {
+        if (SET_COOKIE_NAME.equals(name)) {
             addCookie(value);
             return;
         }
