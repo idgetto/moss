@@ -84,6 +84,12 @@ public class MossServer {
         out.println(responseMessage);
     }
 
+    private void sendNotFound(PrintWriter out) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        responseMessage.setHttpStatus(HttpStatus.NOT_FOUND_404);
+        out.println(responseMessage);
+    }
+
     private void sendFile(String path, PrintWriter out) {
         String htmlDir = System.getenv("MOSS_HTML_DIR");
 
@@ -113,7 +119,7 @@ public class MossServer {
                 e.printStackTrace();
             }
         } else {
-            sendBadRequest(out);
+            sendNotFound(out);
         }
     }
 
