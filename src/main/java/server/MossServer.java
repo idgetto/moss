@@ -96,7 +96,6 @@ public class MossServer {
                 BufferedReader reader = new BufferedReader(new FileReader(path));
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
                     messageBody.append(line);
                     messageBody.append("\n");
                 }
