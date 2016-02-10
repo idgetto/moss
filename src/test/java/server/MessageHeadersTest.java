@@ -87,4 +87,19 @@ public class MessageHeadersTest {
         assertNotEquals(mh1, mh2);
     }
 
+    @Test
+    public void testToString() throws Exception {
+        MessageHeaders messageHeaders = new MessageHeaders();
+        assertEquals("", messageHeaders.toString());
+
+        messageHeaders.addHeader("Host", "localhost:3000");
+        assertEquals("Host: localhost:3000\r\n", messageHeaders.toString());
+
+        messageHeaders.addHeader("Content-Encoding", "gzip");
+        messageHeaders.addCookie("id=3");
+        messageHeaders.addCookie("name=bob");
+        assertEquals("Host: localhost:3000\r\nContent-Encoding: gzip\r\nSet-Cookie: id=3\r\nSet-Cookie: name=bob\r\n", messageHeaders.toString());
+    }
+
+
 }

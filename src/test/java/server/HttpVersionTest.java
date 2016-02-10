@@ -24,4 +24,11 @@ public class HttpVersionTest {
         assertEquals(new HttpVersion("HTTP/2.0"), new HttpVersion("HTTP/2.0"));
         assertEquals(new HttpVersion("HTTP/4.9"), new HttpVersion("HTTP/4.9"));
     }
+
+    @Test
+    public void testToString() throws Exception {
+        assertEquals("HTTP/0.0", new HttpVersion("HTTP/0.0").toString());
+        assertEquals("HTTP/2.0", new HttpVersion("HTTP/2.0").toString());
+        assertEquals("HTTP/4.9", new HttpVersion("HTTP/4.9").toString());
+    }
 }

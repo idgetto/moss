@@ -2,11 +2,7 @@ package server;
 
 import annotations.Rfc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Created by isaac on 2/8/16.
@@ -15,12 +11,15 @@ import java.util.Collections;
 @Rfc("https://tools.ietf.org/html/rfc7230#section-3.2")
 public class MessageHeaders {
     private static final String SET_COOKIE_NAME = "Set-Cookie";
+    private static final String HEADER_SEPARATOR = ": ";
+    private static final String CRLF = "\r\n";
 
     private Map<String, String> headers;
     List<String> cookies;
 
     public MessageHeaders() {
-        headers = new HashMap<>();
+        // maintain header insertion order using LinkedHashMap
+        headers = new LinkedHashMap<>();
         cookies = new ArrayList<>();
     }
 
@@ -52,6 +51,25 @@ public class MessageHeaders {
 
     public List<String> getCookies() {
         return Collections.unmodifiableList(cookies);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry entry : headers.entrySet()) {
+            sb.append(entry.getKey());
+            sb.append(HEADER_SEPARATOR);
+            sb.append(entry.getValue());
+            sb.append(CRLF);
+        }
+
+        for (String cookie : cookies) {
+            sb.append(SET_COOKIE_NAME);
+            sb.append(HEADER_SEPARATOR);
+            sb.append(cookie);
+            sb.append(CRLF);
+        }
+        return sb.toString();
     }
 
     @Override

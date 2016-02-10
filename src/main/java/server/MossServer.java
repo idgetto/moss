@@ -3,6 +3,8 @@ package server;
 import parser.RequestMessageParser;
 import request.RequestMessage;
 import request.RequestMessageParsingException;
+import response.HttpStatus;
+import response.ResponseMessage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -39,7 +41,12 @@ public class MossServer {
                     RequestMessage requestMessage = RequestMessage.fromString(msg);
                     System.out.println(requestMessage.getRequestMethod());
 
-                    sendOk(out);
+                    ResponseMessage responseMessage = new ResponseMessage();
+                    responseMessage.setHttpStatus(HttpStatus.OK_200);
+                    responseMessage.setMessageBody("<h1>Moss</h1>");
+
+                    System.out.println(responseMessage.toString());
+                    out.println(responseMessage);
                 } catch (RequestMessageParsingException e) {
                     e.printStackTrace();
                 }
