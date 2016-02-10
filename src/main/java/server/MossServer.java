@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MossServer {
     private static final int HTTP_MESSAGE_SIZE = 10000;
     private static final String OK_MSG = "HTTP/1.1 200 OK\r\n\r\n<h1>Hello, World!</h1>";
+    private static final String INDEX_PAGE = "/index.html";
 
     private AtomicBoolean done;
 
@@ -86,6 +87,10 @@ public class MossServer {
     private void sendFile(String path, PrintWriter out) {
         String htmlDir = System.getenv("MOSS_HTML_DIR");
 
+        if (path.equals("/")) {
+            path = INDEX_PAGE;
+        }
+
         ResponseMessage responseMessage = new ResponseMessage();
         StringBuilder messageBody = new StringBuilder();
 
@@ -100,15 +105,16 @@ public class MossServer {
                     messageBody.append("\n");
                 }
                 responseMessage.setMessageBody(messageBody.toString());
+                responseMessage.setHttpStatus(HttpStatus.OK_200);
+                out.println(responseMessage);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            sendBadRequest(out);
         }
-
-        responseMessage.setHttpStatus(HttpStatus.OK_200);
-        out.println(responseMessage);
     }
 
 }
