@@ -2,6 +2,7 @@ package request;
 
 import annotations.Rfc;
 import parser.RequestMessageParser;
+import response.ResponseMessage;
 import server.HttpVersion;
 import server.MessageHeaders;
 
@@ -13,18 +14,18 @@ import java.net.URI;
 @Rfc("https://tools.ietf.org/html/rfc7230#section-3")
 public class RequestMessage {
     private final RequestMethod requestMethod;
-    private final URI requestUri;
+    private final RequestTarget requestTarget;
     private final HttpVersion httpVersion;
     private final MessageHeaders requestHeaders;
     private final String requestBody;
 
     public RequestMessage(RequestMethod requestMethod,
-                           URI requestUri,
+                           RequestTarget requestTarget,
                            HttpVersion httpVersion,
                            MessageHeaders requestHeaders,
                            String requestBody) {
         this.requestMethod = requestMethod;
-        this.requestUri = requestUri;
+        this.requestTarget = requestTarget;
         this.requestHeaders = requestHeaders;
         this.httpVersion = httpVersion;
         this.requestBody = requestBody;
@@ -39,8 +40,8 @@ public class RequestMessage {
         return requestMethod;
     }
 
-    public URI getRequestUri() {
-        return requestUri;
+    public RequestTarget getRequestTarget() {
+        return requestTarget;
     }
 
     public HttpVersion getHttpVersion() {

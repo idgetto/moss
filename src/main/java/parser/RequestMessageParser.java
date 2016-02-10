@@ -3,6 +3,7 @@ package parser;
 import request.RequestMessage;
 import request.RequestMessageParsingException;
 import request.RequestMethod;
+import request.RequestTarget;
 import server.HttpVersion;
 import server.MessageHeaders;
 
@@ -18,23 +19,38 @@ import java.util.*;
 public class RequestMessageParser {
     private static final String CRLF = "\r\n";
     private static final String HEADER_SEPARATOR = ": ";
+    private static final String HOST_HEADER_NAME = "Host";
 
     public RequestMessage parseRequestMessage(String msg) throws RequestMessageParsingException {
         StringBuilder sb = new StringBuilder(msg);
 
         RequestMethod requestMethod = parseRequestMethod(sb);
-        URI uri = parseRequestURI(sb);
+        RequestTarget requestTarget = parseRequestTarget(sb);
         HttpVersion httpVersion = parseHttpVersion(sb);
         MessageHeaders messageHeaders = parseMessageHeaders(sb);
         String messageBody = parseMessageBody(sb);
 
-        return new RequestMessage(requestMethod, uri, httpVersion, messageHeaders, messageBody);
+        Map<String, String> headers = messageHeaders.getHeaders();
+        if (headers.containsKey(HOST_HEADER_NAME)) {
+            String hostName = headers.get(HOST_HEADER_NAME);
+            requestTarget.setHost(hostName);
+        } else {
+            System.err.println("Host header not found.");
+        }
+
+        return new RequestMessage(requestMethod, requestTarget, httpVersion, messageHeaders, messageBody);
     }
 
     private RequestMethod parseRequestMethod(StringBuilder sb) throws RequestMessageParsingException {
         String methodStr = readUntil(sb, " ");
         expect(sb, " ");
         return RequestMethod.fromString(methodStr);
+    }
+
+    private RequestTarget parseRequestTarget(StringBuilder sb) throws RequestMessageParsingException {
+        String requestTargetStr = readUntil(sb, " ");
+        expect(sb, " ");
+        return new RequestTarget(requestTargetStr);
     }
 
     private URI parseRequestURI(StringBuilder sb) throws RequestMessageParsingException {

@@ -3,16 +3,18 @@ package server;
 import parser.RequestMessageParser;
 import request.RequestMessage;
 import request.RequestMessageParsingException;
+import request.RequestTarget;
 import response.HttpStatus;
 import response.ResponseMessage;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.awt.*;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.CharBuffer;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -21,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MossServer {
     private static final int HTTP_MESSAGE_SIZE = 10000;
     private static final String OK_MSG = "HTTP/1.1 200 OK\r\n\r\n<h1>Hello, World!</h1>";
+
     private AtomicBoolean done;
 
     public MossServer() {
@@ -38,17 +41,20 @@ public class MossServer {
                     String msg = readAll(in);
                     System.out.println(msg);
 
-                    RequestMessage requestMessage = RequestMessage.fromString(msg);
-                    System.out.println(requestMessage.getRequestMethod());
+                    try {
+                        RequestMessage requestMessage = RequestMessage.fromString(msg);
+                        RequestTarget requestTarget = requestMessage.getRequestTarget();
+                        sendFile(requestTarget.getAbsolutePath(), out);
 
-                    ResponseMessage responseMessage = new ResponseMessage();
-                    responseMessage.setHttpStatus(HttpStatus.OK_200);
-                    responseMessage.setMessageBody("<h1>Moss</h1>");
-
-                    System.out.println(responseMessage.toString());
-                    out.println(responseMessage);
-                } catch (RequestMessageParsingException e) {
-                    e.printStackTrace();
+//                        ResponseMessage responseMessage = new ResponseMessage();
+//                        responseMessage.setHttpStatus(HttpStatus.OK_200);
+//                        responseMessage.setMessageBody("<h1>Moss</h1>");
+//                        out.println(responseMessage);
+                    } catch (RequestMessageParsingException e) {
+                        e.printStackTrace();
+                        sendBadRequest(out);
+                        continue;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -73,6 +79,43 @@ public class MossServer {
 
     private void sendOk(PrintWriter out) {
         out.println(OK_MSG);
+    }
+
+    private void sendBadRequest(PrintWriter out) {
+        ResponseMessage responseMessage = new ResponseMessage();
+        responseMessage.setHttpStatus(HttpStatus.BAD_REQUEST_400);
+        out.println(responseMessage);
+    }
+
+    private void sendFile(String path, PrintWriter out) {
+        String htmlDir = System.getenv("MOSS_HTML_DIR");
+
+        ResponseMessage responseMessage = new ResponseMessage();
+        StringBuilder messageBody = new StringBuilder();
+        System.out.println("HTMLDIR: " + htmlDir);
+
+        path = String.format("%s%s", htmlDir, path);
+        File file = new File(path);
+        System.out.println("File: " + file.getAbsolutePath());
+        if (file.exists() && !file.isDirectory()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(path));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println(line);
+                    messageBody.append(line);
+                    messageBody.append("\n");
+                }
+                responseMessage.setMessageBody(messageBody.toString());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        responseMessage.setHttpStatus(HttpStatus.OK_200);
+        out.println(responseMessage);
     }
 
 }
