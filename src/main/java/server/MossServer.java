@@ -46,10 +46,6 @@ public class MossServer {
                         RequestTarget requestTarget = requestMessage.getRequestTarget();
                         sendFile(requestTarget.getAbsolutePath(), out);
 
-//                        ResponseMessage responseMessage = new ResponseMessage();
-//                        responseMessage.setHttpStatus(HttpStatus.OK_200);
-//                        responseMessage.setMessageBody("<h1>Moss</h1>");
-//                        out.println(responseMessage);
                     } catch (RequestMessageParsingException e) {
                         e.printStackTrace();
                         sendBadRequest(out);
@@ -92,11 +88,9 @@ public class MossServer {
 
         ResponseMessage responseMessage = new ResponseMessage();
         StringBuilder messageBody = new StringBuilder();
-        System.out.println("HTMLDIR: " + htmlDir);
 
         path = String.format("%s%s", htmlDir, path);
         File file = new File(path);
-        System.out.println("File: " + file.getAbsolutePath());
         if (file.exists() && !file.isDirectory()) {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(path));
