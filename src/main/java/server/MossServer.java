@@ -7,13 +7,15 @@ import request.RequestTarget;
 import response.HttpStatus;
 import response.ResponseMessage;
 
-import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.CharBuffer;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +26,8 @@ public class MossServer {
     private static final int HTTP_MESSAGE_SIZE = 10000;
     private static final String OK_MSG = "HTTP/1.1 200 OK\r\n\r\n<h1>Hello, World!</h1>";
     private static final String INDEX_PAGE = "/index.html";
+    private static final int MB = 1_000_000;
+    private static final int MESSAGE_BODY_SIZE = 5 * MB;
 
     private AtomicBoolean done;
 
@@ -36,27 +40,38 @@ public class MossServer {
             while (!done.get()) {
                 try (
                         Socket clientSocket = serverSocket.accept();
-                        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                        OutputStream out = clientSocket.getOutputStream();
                 ) {
-                    String msg = readAll(in);
-                    System.out.println(msg);
-
-                    try {
-                        RequestMessage requestMessage = RequestMessage.fromString(msg);
-                        RequestTarget requestTarget = requestMessage.getRequestTarget();
-                        sendFile(requestTarget.getAbsolutePath(), out);
-
-                    } catch (RequestMessageParsingException e) {
-                        e.printStackTrace();
-                        sendBadRequest(out);
-                        continue;
+                    if (clientSocket.isConnected()) {
+                        handleConnection(in, out);
+                    } else {
+                        System.err.println("Client Socket closed.");
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void handleConnection(Readable in, OutputStream out) {
+        String msg = readAll(in);
+        RequestMessage requestMessage = null;
+        try {
+            requestMessage = RequestMessage.fromString(msg);
+        } catch (RequestMessageParsingException e) {
+            e.printStackTrace();
+            try {
+                sendBadRequest(out);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            return;
+        }
+
+        RequestTarget requestTarget = requestMessage.getRequestTarget();
+        sendFile(requestTarget.getAbsolutePath(), out);
     }
 
     public void stop() {
@@ -74,23 +89,25 @@ public class MossServer {
         return buffer.toString();
     }
 
-    private void sendOk(PrintWriter out) {
-        out.println(OK_MSG);
+    private void sendOk(OutputStream out) throws IOException {
+        ResponseMessage responseMessage = new ResponseMessage();
+        responseMessage.setHttpStatus(HttpStatus.OK_200);
+        responseMessage.write(out);
     }
 
-    private void sendBadRequest(PrintWriter out) {
+    private void sendBadRequest(OutputStream out) throws IOException {
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setHttpStatus(HttpStatus.BAD_REQUEST_400);
-        out.println(responseMessage);
+        responseMessage.write(out);
     }
 
-    private void sendNotFound(PrintWriter out) {
+    private void sendNotFound(OutputStream out) throws IOException {
         ResponseMessage responseMessage = new ResponseMessage();
         responseMessage.setHttpStatus(HttpStatus.NOT_FOUND_404);
-        out.println(responseMessage);
+        responseMessage.write(out);
     }
 
-    private void sendFile(String path, PrintWriter out) {
+    private void sendFile(String path, OutputStream out) {
         String htmlDir = System.getenv("MOSS_HTML_DIR");
 
         if (path.equals("/")) {
@@ -98,28 +115,33 @@ public class MossServer {
         }
 
         ResponseMessage responseMessage = new ResponseMessage();
-        StringBuilder messageBody = new StringBuilder();
+        byte[] messageBody = null;
 
         path = String.format("%s%s", htmlDir, path);
-        File file = new File(path);
-        if (file.exists() && !file.isDirectory()) {
+        byte[] fileContents = new byte[MESSAGE_BODY_SIZE];
+
+        try (InputStream inputStream = new FileInputStream(path)) {
+            int len = inputStream.read(fileContents);
+            messageBody = new byte[len];
+            System.arraycopy(fileContents, 0, messageBody, 0, len);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
             try {
-                BufferedReader reader = new BufferedReader(new FileReader(path));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    messageBody.append(line);
-                    messageBody.append("\n");
-                }
-                responseMessage.setMessageBody(messageBody.toString());
-                responseMessage.setHttpStatus(HttpStatus.OK_200);
-                out.println(responseMessage);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                sendNotFound(out);
+                return;
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-        } else {
-            sendNotFound(out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        responseMessage.setMessageBody(messageBody);
+        responseMessage.setHttpStatus(HttpStatus.OK_200);
+        try {
+            responseMessage.write(out);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

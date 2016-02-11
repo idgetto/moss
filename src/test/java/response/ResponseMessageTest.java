@@ -28,7 +28,7 @@ public class ResponseMessageTest {
         assertEquals("HTTP/2.0 400 Bad Request\r\nName: Bob\r\nFoo: Bar\r\nSet-Cookie: id=4\r\n\r\n", responseMessage.toString());
 
 
-        responseMessage.setMessageBody("<h1>Hello</h1>");
+        responseMessage.setMessageBody("<h1>Hello</h1>".getBytes());
         assertEquals("HTTP/2.0 400 Bad Request\r\nName: Bob\r\nFoo: Bar\r\nSet-Cookie: id=4\r\n\r\n<h1>Hello</h1>", responseMessage.toString());
     }
 }

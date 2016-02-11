@@ -3,6 +3,9 @@ package response;
 import server.HttpVersion;
 import server.MessageHeaders;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * Created by isaac on 2/8/16.
  */
@@ -13,13 +16,13 @@ public class ResponseMessage {
     private HttpVersion httpVersion;
     private HttpStatus httpStatus;
     private MessageHeaders messageHeaders;
-    private String messageBody;
+    private byte[] messageBody;
 
     public ResponseMessage() {
         httpVersion = HttpVersion.HTTP_V_1_1;
         httpStatus = HttpStatus.OK_200;
         messageHeaders = new MessageHeaders();
-        messageBody = new String();
+        messageBody = new byte[0];
     }
 
     public HttpVersion getHttpVersion() {
@@ -46,14 +49,31 @@ public class ResponseMessage {
         this.messageHeaders = messageHeaders;
     }
 
-    public String getMessageBody() {
+    public byte[] getMessageBody() {
         return messageBody;
     }
 
-    public void setMessageBody(String messageBody) {
+    public void setMessageBody(byte[] messageBody) {
         this.messageBody = messageBody;
     }
 
+    public void write(OutputStream out) throws IOException {
+        out.write(httpVersion.toString().getBytes());
+        out.write(SP.getBytes());
+        out.write(String.valueOf(httpStatus.getCode()).getBytes());
+        out.write(SP.getBytes());
+        out.write(httpStatus.getPhrase().getBytes());
+        out.write(CRLF.getBytes());
+
+        // headers
+        out.write(messageHeaders.toString().getBytes());
+
+        // CRLF
+        out.write(CRLF.getBytes());
+
+        // message body
+        out.write(messageBody);
+    }
 
     @Override
     public String toString() {
