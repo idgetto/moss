@@ -1,6 +1,6 @@
 #!/bin/sh
 
-curl -s isaacgetto.com > /dev/null 2>&1
+curl --max-time 5 -s isaacgetto.com > /dev/null 2>&1
 healthcheck=$?
 echo "healthcheck: ${healthcheck}"
 
